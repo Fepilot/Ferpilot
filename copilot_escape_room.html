@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Analytics Escape Room</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .room, .intro, .ending {
+      display: none;
+    }
+    .active {
+      display: block;
+    }
+    .question, .intro-text, .ending-text {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .btn {
+      background-color: #0078d4;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      margin: 10px 0;
+      width: fit-content;
+    }
+    .btn:hover {
+      background-color: #005fa3;
+    }
+    .correct {
+      color: green;
+      font-weight: bold;
+    }
+    .wrong {
+      color: red;
+      font-weight: bold;
+    }
+    .icon {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="intro" class="intro active">
+  <div class="intro-text">
+    <h1>🧠 Copilot Analytics Escape Room</h1>
+    <p>You are a Copilot Analytics Specialist trapped inside a digital data lab run by mischievous AI bots. They’ve locked all the doors with knowledge-based security puzzles.
+    <br><br>
+    To escape, you must prove your mastery of Copilot Analytics.
+    <br><br>
+    What will you do?</p>
+    <button class="btn" onclick="enterRoom()">🔐 Enter the Escape Room</button>
+    <button class="btn" onclick="funExit()">🚪 Leave (I'm scared)</button>
+    <p id="fun-exit"></p>
+  </div>
+</div>
+
+<div id="room-container"></div>
+
+<div id="ending" class="ending">
+  <div class="ending-text">
+    <h1>🎉 You Escaped the Data Lab!</h1>
+    <p>With a flash of insight and analytical brilliance, you unlocked the final firewall and walked into the sunlight of understanding.
+    <br><br>You're now officially a <strong>Copilot Analytics Mastermind</strong>.
+    <br><br>
+    Reward: Unlimited coffee ☕, AI respect 🤖, and one digital cookie 🍪.</p>
+  </div>
+</div>
+
+<script>
+  const quizData = [
+    { id: 'room1', icon: '📦', title: 'Room 1: The Vault of Insights', question: 'How are collaboration habits changing?', correct: 'Work Dynamics', options: ['Work Dynamics', 'Usage', 'Impact'] },
+    { id: 'room2', icon: '📑', title: 'Room 2: Report Riddle Chamber', question: 'Which report shows usage for non-licensed users?', correct: 'Copilot Chat Report', options: ['Copilot Chat Report', 'Usage Report', 'Agent Report'] },
+    { id: 'room3', icon: '📊', title: 'Room 3: Dashboard Decision Room', question: '"Assisted hours saved: 1527" — this belongs to which dashboard section?', correct: 'Impact', options: ['Impact', 'Readiness', 'Learning'] },
+    { id: 'room4', icon: '⚙️', title: 'Room 4: Analytics Alchemy Lab', question: 'What tool allows you to create custom dashboards in Copilot Analytics?', correct: 'Power BI', options: ['Power BI', 'Excel', 'Word'] },
+    { id: 'room5', icon: '🔥', title: 'Room 5: The Firewall of Flaws', question: 'What’s a key limitation of Mac usage reports?', correct: 'Only 28 days of data', options: ['Only 28 days of data', 'Real-time monitoring', 'Export to CSV supported'] },
+    { id: 'room6', icon: '🔍', title: 'Room 6: Logs & Audits', question: 'Which report provides detailed logs of user interactions for security?', correct: 'Audit Logs', options: ['Audit Logs', 'Usage Report', 'Readiness Report'] },
+    { id: 'room7', icon: '🧠', title: 'Room 7: Understanding Users', question: 'Which report helps identify users eligible for Copilot?', correct: 'Readiness Report', options: ['Readiness Report', 'Agent Report', 'Copilot Chat Report'] },
+    { id: 'room8', icon: '📈', title: 'Room 8: Adoption Analysis', question: 'Which dashboard section tracks trends in active users and usage over time?', correct: 'Adoption', options: ['Adoption', 'Learning', 'Impact'] },
+    { id: 'room9', icon: '🗂️', title: 'Room 9: Dashboard Limitations', question: 'What is one major limitation of the Copilot Dashboard?', correct: 'No export to CSV or visual customization', options: ['No export to CSV or visual customization', 'Too much data', 'Real-time editing'] },
+    { id: 'room10', icon: '📚', title: 'Room 10: Learning Resources', question: 'Which dashboard section helps admins promote Copilot?', correct: 'Learning', options: ['Learning', 'Readiness', 'Adoption'] }
+  ];
+
+  const container = document.getElementById('room-container');
+
+  quizData.forEach((room, index) => {
+    const shuffled = [...room.options].sort(() => Math.random() - 0.5);
+    const roomEl = document.createElement('div');
+    roomEl.className = 'room';
+    roomEl.id = room.id;
+    roomEl.innerHTML = `
+      <div class="question">
+        <div class="icon">${room.icon}</div>
+        <h2>${room.title}</h2>
+        <p>${room.question}</p>
+        ${shuffled.map(opt => `<button class="btn" onclick="checkAnswer('${room.id}', '${opt.replace(/'/g, "\'")}', '${room.correct}')">${opt}</button>`).join('')}
+        <p id="feedback-${room.id}"></p>
+      </div>
+    `;
+    container.appendChild(roomEl);
+  });
+
+  function enterRoom() {
+    document.getElementById('intro').classList.remove('active');
+    document.getElementById('room1').classList.add('active');
+  }
+
+  function funExit() {
+    document.getElementById('fun-exit').innerText = "👻 A ghost of productivity chases you! Quick, go back and try the escape room!";
+  }
+
+  function checkAnswer(roomId, answer, correct) {
+    const feedbackEl = document.getElementById(`feedback-${roomId}`);
+    if (answer === correct) {
+      feedbackEl.innerHTML = '<span class="correct">✅ Correct! Moving to the next room...</span>';
+      setTimeout(() => {
+        document.getElementById(roomId).classList.remove('active');
+        const nextRoom = parseInt(roomId.replace('room', '')) + 1;
+        if (document.getElementById(`room${nextRoom}`)) {
+          document.getElementById(`room${nextRoom}`).classList.add('active');
+        } else {
+          document.getElementById('ending').classList.add('active');
+        }
+      }, 1500);
+    } else {
+      feedbackEl.innerHTML = '<span class="wrong">❌ Nope! Try again.</span>';
+    }
+  }
+</script>
+
+</body>
+</html>
