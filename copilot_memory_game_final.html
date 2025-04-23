@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #0078d4;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    .card {
+      width: 220px;
+      height: 100px;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      user-select: none;
+      padding: 10px;
+    }
+    .matched {
+      display: none !important;
+    }
+    .match-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .match-pair {
+      display: flex;
+      gap: 10px;
+      background: #d4edda;
+      border-radius: 10px;
+      padding: 10px;
+      width: fit-content;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧠 Copilot Analytics Memory Game</h1>
+<p>Match each <strong>Concept</strong> on the left with its <strong>Description</strong> on the right!</p>
+<div class="container">
+  <div class="column">
+    <div class="title">📘 Concepts</div>
+    <div class="grid" id="conceptBoard"></div>
+  </div>
+  <div class="column">
+    <div class="title">🧩 Descriptions</div>
+    <div class="grid" id="descriptionBoard"></div>
+  </div>
+  <div class="column">
+    <div class="title">✅ Matches</div>
+    <div class="match-grid" id="matchBoard"></div>
+  </div>
+</div>
+<p id="status"></p>
+
+<script>
+const pairs = [
+  ["📊 Value Metrics", "Time saved and economic impact"],
+  ["📈 Usage Gap", "Delta between total actions and individual apps"],
+  ["🖼️ Generate Image", "Action in Word not currently tracked"],
+  ["🧪 Filters", "Apps, regions, timeframes, org structure"],
+  ["👥 High/Low Usage Groups", "Used to identify productive teams"],
+  ["⚠️ Not Causality", "Patterns, not guaranteed outcomes"],
+  ["⚙️ Custom Assumptions", "Admins can adjust ROI factors"],
+  ["📊 Copilot Dashboard", "Default dashboard for usage insights"],
+  ["🔐 Admin Access", "Default access for Global Admins and Analysts"]
+];
+
+let concepts = [];
+let descriptions = [];
+let flipped = [];
+let matched = 0;
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function initGame() {
+  const shuffled = shuffle([...pairs]);
+  concepts = shuffle(shuffled.map(p => ({ text: p[0], match: p[1], matched: false })));
+  descriptions = shuffle(shuffled.map(p => ({ text: p[1], match: p[0], matched: false })));
+  renderBoards();
+}
+
+function renderBoards() {
+  const conceptBoard = document.getElementById("conceptBoard");
+  const descriptionBoard = document.getElementById("descriptionBoard");
+  conceptBoard.innerHTML = "";
+  descriptionBoard.innerHTML = "";
+
+  concepts.forEach((card, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = flipped.includes(`c${i}`) || card.matched ? card.text : "❓";
+    div.onclick = () => handleFlip('c', i);
+    if (card.matched) div.classList.add("matched");
+    conceptBoard.appendChild(div);
+  });
+
+  descriptions.forEach((card, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerText = flipped.includes(`d${i}`) || card.matched ? card.text : "❓";
+    div.onclick = () => handleFlip('d', i);
+    if (card.matched) div.classList.add("matched");
+    descriptionBoard.appendChild(div);
+  });
+}
+
+function handleFlip(type, index) {
+  const id = `${type}${index}`;
+  if (flipped.includes(id)) return;
+  flipped.push(id);
+  renderBoards();
+
+  if (flipped.length === 2) {
+    const [first, second] = flipped;
+    const type1 = first[0], idx1 = parseInt(first.slice(1));
+    const type2 = second[0], idx2 = parseInt(second.slice(1));
+
+    const card1 = type1 === 'c' ? concepts[idx1] : descriptions[idx1];
+    const card2 = type2 === 'c' ? concepts[idx2] : descriptions[idx2];
+
+    if (card1.match === card2.text || card2.match === card1.text) {
+      card1.matched = true;
+      card2.matched = true;
+      matched++;
+      document.getElementById("status").innerText = `✅ Matched ${matched} of ${pairs.length}`;
+      if (matched === pairs.length) {
+        document.getElementById("status").innerText = "🎉 You matched all pairs! Great job!";
+      }
+      showMatch(card1.text, card2.text);
+    }
+    setTimeout(() => {
+      flipped = [];
+      renderBoards();
+    }, 1000);
+  }
+}
+
+function showMatch(concept, description) {
+  const matchBoard = document.getElementById("matchBoard");
+  const pairDiv = document.createElement("div");
+  pairDiv.className = "match-pair";
+  pairDiv.innerHTML = `<div>${concept}</div><div>${description}</div>`;
+  matchBoard.appendChild(pairDiv);
+}
+
+initGame();
+</script>
+
+</body>
+</html>
